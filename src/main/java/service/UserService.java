@@ -1,6 +1,6 @@
 package service;
 
-import model.Users;
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -11,12 +11,12 @@ import java.util.List;
 @RequestMapping("/api")
 
 public class UserService {
-    private Users createdUser;
-    private Users usersById;
-    private List<Users> allUsers = new ArrayList<>();
-    private final static Logger userLog = LoggerFactory.getLogger(Users.class);
+    private User createdUser;
+    private User usersById;
+    private List<User> allUsers = new ArrayList<>();
+    private final static Logger userLog = LoggerFactory.getLogger(User.class);
     @PostMapping("/users")
-    public Users createUser(@RequestBody Users user) {
+    public User createUser(@RequestBody User user) {
         // логика создания пользователя
         createdUser = user;
         allUsers.add(user);
@@ -25,7 +25,7 @@ public class UserService {
     }
 
     @PutMapping("/users/{id}")
-    public Users updateUser(@PathVariable Long id, @RequestBody Users updatedUser) {
+    public User updateUser(@PathVariable long id, @RequestBody User updatedUser) {
         // логика обновления пользователя
         usersById = getUserById(id);
         if (usersById != null) {
@@ -40,14 +40,14 @@ public class UserService {
     }
 
     @GetMapping("/users")
-    public List<Users> getAllUsers() {
+    public List<User> getAllUsers() {
         // логика получения списка всех пользователей
         userLog.info("Все users получены");
         return allUsers;
     }
 
     @GetMapping("/users/{id}")
-    public Users getUserById(@PathVariable Long id) {
+    public User getUserById(@PathVariable long id) {
         // логика получения пользователя по id
         usersById = allUsers.stream().filter(u -> u.getId().equals(id)).findFirst().orElse(null);
         if (usersById != null) {

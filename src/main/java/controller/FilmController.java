@@ -1,43 +1,63 @@
 package controller;
 
-import model.Films;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import exceptions.IDException;
+import exceptions.ValidationException;
+import lombok.extern.slf4j.Slf4j;
+import model.Film;
 import org.springframework.web.bind.annotation.*;
-import service.FilmService;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
-@RestController
+@Slf4j
+@RestController()
 @RequestMapping("/films")
 public class FilmController {
+    private final Map<Integer, Film> films = new HashMap<>();
+    private Integer id = 1;
+    private static final LocalDate FIRST_FILM_RELEASE = LocalDate.of(1895, 12, 28);
 
-    private final FilmService filmService;
-
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
+    private Integer setId() {
+        return id++;
     }
 
     @PostMapping
-    public ResponseEntity<Films> addFilm(@RequestBody Films film) {
-        Films createdFilm = filmService.addFilm(film);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdFilm);
+    public Film create( @RequestBody Film film) {
+        if (films.containsKey(film.getId())) {
+            log.debug("Film id:{}", film.getId());
+            throw new IDException("Id already use");
+        }
+        film.setId(setId());
+        validate(film);
+        films.put( film.getId(), film);
+        log.info("film with id:{} create", film.getId());
+        return film;
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Films> updateFilm(@PathVariable Long id, @RequestBody Films updatedFilm) {
-        Films film = filmService.getFilmById(id);
-        if (film == null) {
-            return ResponseEntity.notFound().build();
+    private void validate(Film film) {
+        if (film.getReleaseDate().isBefore(FIRST_FILM_RELEASE)) {
+            log.debug("film not valid release date:{}", film.getReleaseDate());
+            throw new ValidationException("Release date not valid");
         }
-        updatedFilm.setId(id);
-        Films savedFilm = filmService.updateFilm(id,updatedFilm);
-        return ResponseEntity.ok(savedFilm);
     }
 
     @GetMapping
-    public ResponseEntity<List<Films>> getAllFilms() {
-        List<Films> films = filmService.getAllFilms();
-        return ResponseEntity.ok(films);
+    public Collection<Film> getAll() {
+        return films.values();
     }
+
+    @PutMapping
+    public Film put( @RequestBody Film film) {
+        if (!films.containsKey(film.getId())) {
+            log.debug("Film id:{}", film.getId());
+            throw new IDException("Id not found");
+        }
+        validate(film);
+        films.put(film.getId(), film);
+        log.info("Film with id:{} update", film.getId());
+        return film;
+    }
+
 }

@@ -1,46 +1,58 @@
 package controller;
 
 
-import model.Users;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import exceptions.IDException;
+import lombok.extern.slf4j.Slf4j;
+import model.User;
 import org.springframework.web.bind.annotation.*;
-import service.UserService;
+import java.util.Collection;
+import java.util.HashMap;
 
-import java.util.List;
-
+@Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
+    private HashMap<Integer, User> users = new HashMap<>();
+    private int id = 1;//не може начинаться с нуля
 
-    private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
+    private int setId() {
+        return id++;
     }
 
     @PostMapping
-    public ResponseEntity<Users> createUser(@RequestBody Users user) {
-        Users createdUser = userService.createUser(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    public User create(@RequestBody User user) {
+        if (users.containsKey(user.getId())) {
+            log.debug("User с id:{}", user.getId());
+            throw new IDException("id занят");
+        }
+        user.setId(setId());
+     validate(user);
+        users.put(user.getId(), user);
+        log.info("Создан User с id:{}", user.getId());
+        return user;
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Users> updateUser(@PathVariable Long id, @RequestBody Users updatedUser) {
-        Users user = userService.getUserById(id);
-        if (user == null) {
-            return ResponseEntity.notFound().build();
+    private void validate(User user) {
+        if (user.getName().isBlank() || user.getName() == null) {
+            user.setName(user.getLogin());
+            log.debug("У User с id:{} нет имени", user.getId());
         }
-        updatedUser.setId(id);
-        Users savedUser = userService.updateUser(id,updatedUser);
-        return ResponseEntity.ok(savedUser);
     }
 
     @GetMapping
-    public ResponseEntity<List<Users>> getAllUsers() {
-        List<Users> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
+    public Collection<User> getAll() {
+        return users.values();
+    }
+
+    @PutMapping
+    public User put( @RequestBody User user) {
+        if (!users.containsKey(user.getId())) {
+            log.debug("User с id:{}", user.getId());
+            throw new IDException("Id не найден");
+        }
+        validate(user);
+        users.put(user.getId(), user);
+        log.info("User с id:{} update", user.getId());
+        return user;
     }
 }
-
-

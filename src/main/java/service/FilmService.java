@@ -1,7 +1,7 @@
 package service;
 
 import lombok.extern.slf4j.Slf4j;
-import model.Films;
+import model.Film;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -12,24 +12,25 @@ import java.util.List;
 @Service
 @Slf4j
 public class FilmService {
-    Films createdFilm;
-    List<Films> allFilms;
-    Films FilmById;
-    private final static Logger filmLog = LoggerFactory.getLogger(Films.class);
+    Film createdFilm;
+    List<Film> allFilms;
+    Film FilmById;
+    private final static Logger filmLog = LoggerFactory.getLogger(Film.class);
     @PostMapping("/films")
-    public Films addFilm(@RequestBody Films film) {
+    public Film addFilm(@RequestBody Film film) {
         try {
             // логика создания фильма
-            filmLog.info("Film {} created successfully", film.getName());
+            filmLog.info("Film {} успешно создан", film.getName());
             return createdFilm;
         } catch (Exception e) {
-            filmLog.error("Failed to create film. Reason: {}", e.getMessage());
+            filmLog.error("Проблема с созданием Film.По причине: {}", e.getMessage());
             throw e;
         }
     }
 
     @PutMapping("/films/{id}")
-    public Films updateFilm(@PathVariable Long id, @RequestBody Films updatedFilm) {
+    public Film updateFilm(@PathVariable
+                               @RequestBody Film updatedFilm) {
         try {
             // логика обновления фильма
             filmLog.info("Film {} updated successfully", updatedFilm.getName());
@@ -41,7 +42,7 @@ public class FilmService {
     }
 
     @GetMapping("/films")
-    public List<Films> getAllFilms() {
+    public List<Film> getAllFilms() {
         try {
             // логика получения всех фильмов
             filmLog.info("All films retrieved successfully");
@@ -52,7 +53,7 @@ public class FilmService {
         }
     }
 
-    public Films getFilmById(@PathVariable Long id) {
+    public Film getFilmById(@PathVariable long id) {
         try {
             // логика получения фильма по id
             filmLog.info("Film with id {} retrieved successfully", id);
