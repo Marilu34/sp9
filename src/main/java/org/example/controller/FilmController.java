@@ -1,9 +1,9 @@
-package controller;
+package org.example.controller;
 
-import exceptions.IDException;
-import exceptions.ValidationException;
+import org.example.exceptions.IDException;
+import org.example.exceptions.ValidationException;
 import lombok.extern.slf4j.Slf4j;
-import model.Film;
+import org.example.model.Film;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -12,8 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-@RestController()
-@RequestMapping("/films")
+@RestController
 public class FilmController {
     private final Map<Integer, Film> films = new HashMap<>();
     private Integer id = 1;
@@ -23,15 +22,15 @@ public class FilmController {
         return id++;
     }
 
-    @PostMapping
-    public Film create( @RequestBody Film film) {
+    @PostMapping("/filmcreate")
+    public Film create(@RequestBody Film film) {
         if (films.containsKey(film.getId())) {
             log.debug("Film id:{}", film.getId());
             throw new IDException("Id already use");
         }
         film.setId(setId());
         validate(film);
-        films.put( film.getId(), film);
+        films.put(film.getId(), film);
         log.info("film with id:{} create", film.getId());
         return film;
     }
@@ -43,13 +42,13 @@ public class FilmController {
         }
     }
 
-    @GetMapping
+    @GetMapping("/filmgetall")
     public Collection<Film> getAll() {
         return films.values();
     }
 
-    @PutMapping
-    public Film put( @RequestBody Film film) {
+    @PutMapping("/filmput")
+    public Film put(@RequestBody Film film) {
         if (!films.containsKey(film.getId())) {
             log.debug("Film id:{}", film.getId());
             throw new IDException("Id not found");
