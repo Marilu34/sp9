@@ -21,7 +21,7 @@ public class Film {
     @NotBlank(message = "Имя должно содержать символы")
     private String name;
     @NotBlank(message = "Описание должно содержать символы")
-    @Size(max = 200, message = "вместимость описания до 400 символов")
+    @Size(max = 200, message = "вместимость описания до 200 символов")
     private String description;
     @Past(message = "дата выпуска не должна быть будущей")
     private LocalDate releaseDate;

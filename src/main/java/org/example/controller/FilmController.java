@@ -46,12 +46,12 @@ public class FilmController {
             log.debug("Дата выпуска Film :{}", film.getReleaseDate());
             throw new ValidationException("Дата выпуска Film недействительна");
         }
-        if (film.getName()==null || film.getName().isBlank()) {
+        if (film.getName().isBlank()|| film.getName()==null) {
                        throw new ValidationException("Имя Film не может быть пустым");
-        } if (film.getDuration() < 0 ) {
+        } if (film.getDuration() <= 0 || film.getDuration()> 200) {
             throw new ValidationException("Продолжительность Film не может быть отрицательным");
            }
-        if ( film.getDescription() == null || film.getDescription().isBlank()) {
+        if ( film.getDescription() == null || film.getDescription().isBlank() || film.getDescription().length()>200) {
             throw new ValidationException("Описание Film не может быть больше 200 символов");
         }  }
 
