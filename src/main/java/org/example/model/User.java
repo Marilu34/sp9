@@ -13,7 +13,7 @@ import java.time.LocalDate;
 
 
 public class User {
-    private Integer id;
+   @NotNull private Integer id;
     @Email(message = "email должно содержать символы или цифры")
     String email;
     private String name;

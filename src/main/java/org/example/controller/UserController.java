@@ -30,9 +30,9 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody @Valid User user) {
-        if (users.containsKey(user.getId())) {
-            log.debug("User с id:{}", user.getId());
-            throw new IDException("id занят");
+        if (users.containsValue(user)) {
+            users.put(user.getId(), user);
+            log.info("Пользователь с id={} обновлен", user.getId());
         }
         user.setId(generateId());
         validate(user);
@@ -44,13 +44,14 @@ public class UserController {
     private void validate(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
-       //     log.debug("У User с id:{} нет имени", user.getId());
+            //     log.debug("У User с id:{} нет имени", user.getId());
         }
         if (user.getLogin() == null || user.getLogin().isBlank()) {
             throw new ValidationException("логин не может быть пустым");
 //            user.setLogin(user.getName().trim());
 //            log.debug("У User с id:{} нет логина", user.getId());
-        }if(user.getLogin().contains(" ")) {
+        }
+        if (user.getLogin().contains(" ")) {
             throw new ValidationException("логин не может содержать пробелы");
         }
         if (user.getEmail() == null || user.getEmail().isBlank()) {
@@ -73,7 +74,8 @@ public class UserController {
     @PutMapping
     public User put(@RequestBody @Valid User user) {
         if (!users.containsKey(user.getId())) {
-            log.debug("User с id:{} не найден", user.getId());
+            throw new ValidationException("User не найден");
+            //   log.debug("User с id:{} не найден", user.getId());
         } else {
             validate(user);
             users.put(user.getId(), user);
