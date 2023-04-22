@@ -1,22 +1,28 @@
 package org.example.model;
 
 import lombok.*;
-//import javax.validation.constraints.Email;
-//import javax.validation.constraints.NotBlank;
-//import javax.validation.constraints.Past;
+import org.springframework.validation.annotation.Validated;
+
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+
+
 public class User {
     private Integer id;
-//    @Email(message = "email должно содержать символы или цифры")
-    private String email;
-//    @NotBlank(message = "логин должен содержать символы")
-    private String login;
+    @Email(message = "email должно содержать символы или цифры")
+    String email;
     private String name;
-//    @Past(message = "дата рождения должна быть не будущей")
-//    @NonNull
+    @NotBlank(message = "Логин не может быть пустым!")
+    private String login;
+
+    @Past
+    @NonNull
     private LocalDate birthday;
+
+
 }
