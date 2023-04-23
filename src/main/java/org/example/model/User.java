@@ -1,9 +1,7 @@
 package org.example.model;
 
 import lombok.*;
-import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.time.LocalDate;
 
@@ -13,7 +11,8 @@ import java.time.LocalDate;
 
 
 public class User {
-   @NotNull private Integer id;
+    @NotNull
+    private Integer id;
     @Email(message = "email должно содержать символы или цифры")
     String email;
     private String name;

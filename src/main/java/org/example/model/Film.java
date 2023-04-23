@@ -1,10 +1,6 @@
 package org.example.model;
 
 import lombok.*;
-import org.springframework.boot.convert.DurationFormat;
-import org.springframework.boot.convert.DurationUnit;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
@@ -26,5 +22,6 @@ public class Film {
     @Past(message = "дата выпуска не должна быть будущей")
     private LocalDate releaseDate;
     @Positive(message = "продолжительность должна быть отрицательной")
-    @NotNull private Integer duration;
+    @NotNull
+    private Integer duration;
 }
