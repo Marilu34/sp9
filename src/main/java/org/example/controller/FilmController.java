@@ -31,6 +31,7 @@ public class FilmController {
 
     @PostMapping
     public Film create(@RequestBody Film film) {
+
         if (films.containsKey(film.getId())) {
             log.debug("Film с id:{}", film.getId());
             throw new IDException("Id уже занят");
