@@ -34,8 +34,8 @@ public class UserController {
             users.put(user.getId(), user);
             log.info("Пользователь с id = {} обновлен", user.getId());
         }
-        user.setId(generateId());
         validate(user);
+        user.setId(generateId());
         users.put(user.getId(), user);
         log.info("Создан User с id:{}", user.getId());
         return user;
