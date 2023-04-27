@@ -3,12 +3,12 @@
  import org.example.exceptions.ValidationException;
  import org.example.model.Film;
  import org.example.model.User;
- import org.testng.annotations.Test;
+ import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
+ import java.time.LocalDate;
 
- import static org.testng.Assert.assertThrows;
- import static org.testng.AssertJUnit.assertEquals;
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
     public class ValidateTests {
