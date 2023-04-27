@@ -1,8 +1,8 @@
 import org.example.controller.FilmController;
-import org.example.controller.UserController;
+
 import org.example.exceptions.ValidationException;
 import org.example.model.Film;
-import org.example.model.User;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -11,9 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-public class ValidateTests {
+public class FilmTests {
     private final FilmController filmController = new FilmController();
-    private final UserController userController = new UserController();
 
     @Test
     public void testFilmRightCreation() {
@@ -27,19 +26,6 @@ public class ValidateTests {
         Film film = new Film(2, "Film2", "Некорректная дата релиза",
                 LocalDate.of(1000, 11, 1), 11);
         assertThrows(ValidationException.class, () -> filmController.create(film));
-    }
-
-    @Test
-    public void testUserValidateRightCreation() {
-        User user = new User(3, "yandex@ya.ru", "yandex", "Test", LocalDate.of(2000, 1, 1));
-        assertEquals(user, userController.create(user));
-    }
-
-    @Test
-    public void testUserWithoutName() {
-        User user = new User(33, "yandex@ya.ru", "", "yandex", LocalDate.of(2000, 1, 1));
-        userController.create(user);
-        assertEquals(user.getName(), user.getLogin());
     }
 }
 

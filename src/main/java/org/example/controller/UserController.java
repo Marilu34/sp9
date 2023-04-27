@@ -44,12 +44,9 @@ public class UserController {
     private void validate(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
-            //     log.debug("У User с id:{} нет имени", user.getId());
         }
         if (user.getLogin() == null || user.getLogin().isBlank()) {
             throw new ValidationException("логин не может быть пустым");
-//            user.setLogin(user.getName().trim());
-//            log.debug("У User с id:{} нет логина", user.getId());
         }
         if (user.getLogin().contains(" ")) {
             throw new ValidationException("логин не может содержать пробелы");
@@ -60,8 +57,6 @@ public class UserController {
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("дата рождения должна быть не будущей");
-//            user.setBirthday(LocalDate.now());
-//            log.debug("У User с id:{} нет почты", user.getId());
         }
     }
 
@@ -75,7 +70,6 @@ public class UserController {
     public User put(@RequestBody @Valid User user) {
         if (!users.containsKey(user.getId())) {
             throw new ValidationException("User не найден");
-            //   log.debug("User с id:{} не найден", user.getId());
         } else {
             validate(user);
             users.put(user.getId(), user);
