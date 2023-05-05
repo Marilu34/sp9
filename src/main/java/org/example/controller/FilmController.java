@@ -1,81 +1,71 @@
 package org.example.controller;
 
-import lombok.Data;
-import org.example.exceptions.IDException;
-import org.example.exceptions.ValidationException;
-import lombok.extern.slf4j.Slf4j;
 import org.example.model.Film;
-import org.springframework.validation.annotation.Validated;
+import org.example.storage.film.InMemoryFilmStorage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.example.service.FilmService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
-@Slf4j
-@RestController
+@RestController()
 @RequestMapping("/films")
-@Data
-@Validated
-
 public class FilmController {
-    private final Map<Integer, Film> films = new HashMap<>();
-    private Integer id = 1;
-    private static final LocalDate FIRST_FILM_RELEASE = LocalDate.of(1895, 12, 28);
-
-    private Integer generateID() {
-        return id++;
+    private final FilmService filmService;
+    private final InMemoryFilmStorage filmStorage;
+    @Autowired
+    public FilmController(FilmService filmService, InMemoryFilmStorage filmStorage) {
+        this.filmService = filmService;
+        this.filmStorage = filmStorage;
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
-
-        if (films.containsKey(film.getId())) {
-            log.debug("Film с id:{}", film.getId());
-            throw new IDException("Id уже занят");
-        }
-        film.setId(generateID());
-        validate(film);
-        films.put(film.getId(), film);
-        log.info("Создан Film с id:{}", film.getId());
-        return film;
+    public Film addFilm(@Valid @RequestBody Film film) {
+        return filmStorage.createFilm(film);
     }
 
-    private void validate(Film film) {
-        if (film.getReleaseDate().isBefore(FIRST_FILM_RELEASE)) {
-            log.debug("Дата выпуска Film :{}", film.getReleaseDate());
-            throw new ValidationException("Дата выпуска Film недействительна");
-        }
-        if (film.getName().isBlank() || film.getName() == null) {
-            throw new ValidationException("Имя Film не может быть пустым");
-        }
-        if (film.getDuration() <= 0 || film.getDuration() > 200) {
-            throw new ValidationException("Продолжительность Film не может быть отрицательным");
-        }
-        if (film.getDescription() == null || film.getDescription().isBlank() || film.getDescription().length() > 200) {
-            throw new ValidationException("Описание Film не может быть больше 200 символов");
-        }
-    }
 
     @GetMapping
     public Collection<Film> getAll() {
-        return films.values();
+        return filmStorage.getAllFilms();
     }
 
     @PutMapping
-    public Film put(@RequestBody @Valid Film film) {
-        if (((id == 0) || (id < 0)) | (film.getName() == null)) {
-            throw new ValidationException("id должен быть больше 0");
-        }
-        if (!films.containsKey(film.getId())) {
-            log.debug("Film с id:{}", film.getId());
-            throw new IDException("Id не обнаружен");
-        }
-        validate(film);
-        films.put(film.getId(), film);
-        log.info("Film с id:{} обновлен", film.getId());
-        return film;
+    public Film updateFilm(@Valid @RequestBody Film film) {
+        return filmStorage.updateFilm(film);
     }
+
+    @GetMapping("/{filmId}")
+    public Film getFilmById(@PathVariable("filmId") Integer filmId) {
+        return filmStorage.getFilmById(filmId);
+    }
+
+    @DeleteMapping
+    public void deleteAllFilms() {
+        filmStorage.deleteAllFilms();
+    }
+
+    @DeleteMapping("/{filmId}")
+    public void deleteFilm(@PathVariable("filmId") Integer filmId) {
+        filmStorage.deleteFilmById(filmId);
+    }
+
+    @PutMapping("/{filmId}/like/{userId}")
+    public void likeFilm(@PathVariable Integer filmId, @PathVariable Integer userId) {
+        filmService.addLikeToFilm(filmId, userId);
+    }
+
+    @DeleteMapping("/{filmId}/like/{userId}")
+    public void deleteLikeFilm(@PathVariable Integer filmId, @PathVariable Integer userId) {
+        filmService.deleteFilmLike(filmId, userId);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(
+            @RequestParam(value = "count", defaultValue = "10", required = false) int count) {
+        return filmService.getPopularFilms(count);
+    }
+
 }

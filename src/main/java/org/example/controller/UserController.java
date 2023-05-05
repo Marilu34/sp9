@@ -1,80 +1,88 @@
 package org.example.controller;
 
-
-import lombok.Data;
-
-import lombok.extern.slf4j.Slf4j;
-import org.example.exceptions.ValidationException;
 import org.example.model.User;
-import org.springframework.validation.annotation.Validated;
+import org.example.storage.user.InMemoryUserStorage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.example.service.UserService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-@Data
-@Slf4j
 @RestController
-@Validated
 @RequestMapping("/users")
 public class UserController {
-    private HashMap<Integer, User> users = new HashMap<>();
-    private int id = 1;//не може начинаться с нуля
+    UserService userService;
+   InMemoryUserStorage userStorage;
 
-    private int generateId() {
-        return id++;
+    public UserController() {
+
+    }
+    @Autowired
+    public UserController(UserService userService, InMemoryUserStorage userStorage) {
+        this.userService = userService;
+      this.userStorage = userStorage;
     }
 
     @PostMapping
-    public User create(@RequestBody @Valid User user) {
-        if (users.containsValue(user)) {
-            users.put(user.getId(), user);
-            log.info("Пользователь с id = {} обновлен", user.getId());
-        }
-        validate(user);
-        user.setId(generateId());
-        users.put(user.getId(), user);
-        log.info("Создан User с id:{}", user.getId());
-        return user;
+    public User create(@Valid @RequestBody User user) {
+        return userStorage.createUser(user);
     }
 
-    private void validate(User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        if (user.getLogin() == null || user.getLogin().isBlank()) {
-            throw new ValidationException("логин не может быть пустым");
-        }
-        if (user.getLogin().contains(" ")) {
-            throw new ValidationException("логин не может содержать пробелы");
-        }
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
-            user.setEmail(user.getEmail());
-            log.debug("У User с id:{} нет почты", user.getId());
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("дата рождения должна быть не будущей");
-        }
-    }
 
     @GetMapping
-    public Collection<User> getAll() {
-
-        return users.values();
+    public Collection<User> getAllUsers() {
+        return userStorage.getUsers();
     }
 
     @PutMapping
-    public User put(@RequestBody @Valid User user) {
-        if (!users.containsKey(user.getId())) {
-            throw new ValidationException("User не найден");
-        } else {
-            validate(user);
-            users.put(user.getId(), user);
-            log.info("User с id:{} update", user.getId());
-        }
-        return user;
+    public User updateUser(@Valid @RequestBody User user) {
+        return userStorage.updateUsers(user);
+    }
+
+    @GetMapping("/{userId}")
+    public User getUserById(@PathVariable("userId") Integer userId) {
+        return userStorage.getUsersById(userId);
+    }
+
+    @DeleteMapping
+    public void deleteAllUsers() {
+        userStorage.deleteUsers();
+    }
+
+    @DeleteMapping("{userId}")
+    public void deleteUser(@PathVariable("userId") Integer userId) {
+        userStorage.deleteUsersById(userId);
+    }
+
+    @PutMapping("/{userId}/friends/{friendId}")
+    public void addFriend(@PathVariable("userId") Integer userId,
+                          @PathVariable("friendId") Integer friendId) {
+        userService.addFriend(userId, friendId);
+    }
+
+    @GetMapping("/{userId}/friends")
+    public List<User> getFriends(@PathVariable("userId") Integer userId) {
+        return userService.getFriendList(userId);
+    }
+
+    @DeleteMapping("/{userId}/friends/{friendId}")
+    public void deleteFriend(@PathVariable("userId") Integer userId,
+                             @PathVariable("friendId") Integer friendId) {
+        userService.deleteFriend(userId, friendId);
+    }
+
+    @GetMapping("/{userId}/friends/common/{friendsId}")
+    public List<User> getCommonFriends(@PathVariable Integer userId,
+                                       @PathVariable Integer friendsId) {
+        Set<Integer> idFriends = getUserById(userId).getFriendsId();
+                Set<Integer> friendFriendsId = getUserById(userId).getFriendsId();
+        idFriends.retainAll(getUserById(userId).getFriendsId());
+
+        return friendFriendsId.stream().
+                map(friendId -> userStorage.getUsersById(friendId)).collect(Collectors.toList());
     }
 }
