@@ -1,6 +1,5 @@
 package org.example.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.validation.constraints.*;
@@ -13,25 +12,20 @@ import java.util.Set;
 @NoArgsConstructor
 public class Film {
 
-    public static final String minFilmDate = "1895-12-28";
-
     private int id;
 
-    @NotNull(message = "Film name should not be empty")
+    @NotNull(message = "Имя должно содержать символы")
     @NotEmpty
     private String name;
 
-    @Size(max = 200, message = "Max value of description is 200")
+    @Size(max = 200, message = "вместимость описания до 200 символов")
     private String description;
 
-    @Past(message = "Date of film should be after " + minFilmDate)
+    @Past(message = "дата выпуска не должна быть будущей")
     private LocalDate releaseDate;
 
-    @Positive(message = "Should be > 0")
+    @Positive(message = "продолжительность должна быть отрицательной")
     private int duration;
 
-      @JsonIgnore
-    @Getter
-    @Setter
     private Set<Integer> userIdLikes = new HashSet<>();
 }

@@ -1,6 +1,5 @@
 package org.example.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.lang.Nullable;
 
@@ -15,13 +14,12 @@ import java.util.Set;
 public class User {
 
     private int id;
-
-    @Email(message = "Email should be format \"xxx@mm.com\"")
-    @NotNull(message = "Email should not be empty")
+    @NotNull
+    @Email(message = "email должно содержать символы или цифры")
     private String email;
 
-    @NotBlank
     @NotNull
+    @NotBlank(message = "Логин не может быть пустым!")
     private String login;
 
     @Nullable
@@ -30,8 +28,5 @@ public class User {
     @Past
     private LocalDate birthday;
 
-    @JsonIgnore
-    @Getter
-    @Setter
-    private Set<Integer> friends = new HashSet<>();
+    private Set<Integer> friendsIds = new HashSet<>();
 }

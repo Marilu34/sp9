@@ -3,7 +3,6 @@ import org.example.storage.film.InMemoryFilmStorage;
 import org.example.exceptions.ValidationException;
 import org.example.model.Film;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,16 +28,11 @@ public class FilmTests {
         private MockMvc mockMvc;
         private final String urlTemplate = "/films";
 
-        @AfterEach
-        public void startService() {
-            InMemoryFilmStorage.setStartId0();
-            InMemoryFilmStorage.clearDb();
-        }
-        @Test
+            @Test
         public Film testFilmRightCreation() {
             Film film = new Film(12, "Film1", "Корректная дата релиза",
                     LocalDate.of(2222, 12, 2), 22,new HashSet<>());
-            assertEquals(film, filmController.add(film));
+            assertEquals(film, filmController.addFilms(film));
             return film;
         }
 
@@ -46,7 +40,7 @@ public class FilmTests {
         public void testFilmInCorrectDateRelease() {
             Film film = new Film(2, "Film2", "Некорректная дата релиза",
                     LocalDate.of(1000, 11, 1), 11, new HashSet<>());
-            assertThrows(ValidationException.class, () -> filmController.add(film));
+            assertThrows(ValidationException.class, () -> filmController.addFilms(film));
         }
         @Test
         public void GetAllFilms_executeRequest_ShouldReturn200Code() throws Exception {
@@ -183,7 +177,7 @@ public class FilmTests {
         public void CreateFilm_withFilmDateLessThanRequired_ShouldReturn400Code() throws Exception {
             // Arrange
             var film = testFilmRightCreation();
-            film.setReleaseDate(LocalDate.parse(Film.minFilmDate));
+            film.setReleaseDate(InMemoryFilmStorage.FIRST_FILM_RELEASE);
             var jsonFilm = GsonConverter.convertObjectToJson(film);
 
             // Act
@@ -331,7 +325,7 @@ public class FilmTests {
             var film = testFilmRightCreation();
             var jsonFilm = GsonConverter.convertObjectToJson(film);
 
-            film.setReleaseDate(LocalDate.parse(Film.minFilmDate));
+            film.setReleaseDate(InMemoryFilmStorage.FIRST_FILM_RELEASE);
             var newJsonFilm = GsonConverter.convertObjectToJson(film);
 
             mockMvc.perform(post(urlTemplate)

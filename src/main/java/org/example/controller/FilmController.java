@@ -93,4 +93,9 @@ public class FilmController {
             }
         }
     }
+//    private void validateContrller(){
+//        if (userService.getUser(userId) == null) {
+//            throw new NotFoundException("User with id=" + userId + " is not exist");
+//        }
+//    }
 }

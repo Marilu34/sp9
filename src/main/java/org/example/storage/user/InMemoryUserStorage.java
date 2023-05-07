@@ -55,19 +55,19 @@ public class InMemoryUserStorage implements UserStorage {
     public void addFriend(int userId, int friendId) {
         var user = users.get(userId);
         validate(user);
-        user.getFriends().add(friendId);
+        user.getFriendsIds().add(friendId);
     }
 
     @Override
     public void deleteFriend(int userId, int friendId) {
         var user = users.get(userId);
-        user.getFriends().remove(friendId);
+        user.getFriendsIds().remove(friendId);
     }
 
     @Override
     public ArrayList<User> getFriends(int userId) {
         var user = users.get(userId);
-        var listOfFriendsIds = user.getFriends();
+        var listOfFriendsIds = user.getFriendsIds();
         var result = new ArrayList<User>();
 
         for (Integer friendId : listOfFriendsIds) {
@@ -81,8 +81,8 @@ public class InMemoryUserStorage implements UserStorage {
         var user = users.get(userId);
         var secondUser = users.get(userIdToCompare);
         var listOfCommonFriendsIds = new HashSet<Integer>();
-        for (Integer friendId : user.getFriends()) {
-            for (Integer friendIdSecondUser : secondUser.getFriends()) {
+        for (Integer friendId : user.getFriendsIds()) {
+            for (Integer friendIdSecondUser : secondUser.getFriendsIds()) {
                 if (friendId.equals(friendIdSecondUser)) {
                     listOfCommonFriendsIds.add(friendId);
                 }

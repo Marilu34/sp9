@@ -98,5 +98,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (film.getDescription() == null || film.getDescription().isBlank() || film.getDescription().length() > 200) {
             throw new ValidationException("Описание Film не может быть больше 200 символов");
         }
+
     }
 }
