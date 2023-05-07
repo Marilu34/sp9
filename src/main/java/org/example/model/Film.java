@@ -13,7 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class Film {
 
-    private static final String minFilmDate = "1895-12-28";
+    public static final String minFilmDate = "1895-12-28";
 
     private int id;
 

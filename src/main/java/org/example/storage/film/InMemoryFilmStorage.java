@@ -2,9 +2,11 @@ package org.example.storage.film;
 
 import lombok.Data;
 import lombok.Getter;
+import org.example.exceptions.ValidationException;
 import org.example.model.Film;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +15,7 @@ import java.util.stream.Collectors;
 @Component
 @Data
 public class InMemoryFilmStorage implements FilmStorage {
-
+    private static final LocalDate FIRST_FILM_RELEASE = LocalDate.of(1895, 12, 28);
     private static final Map<Integer, Film> films = new HashMap<>();
     private static int nextId = 0;
 
@@ -24,6 +26,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film add(Film film) {
+        validate(film);
         film.setId(setNextId());
         films.put(film.getId(), film);
         return film;
@@ -80,5 +83,20 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     public static void clearDb() {
         films.clear();
+    }
+
+    private void validate(Film film) {
+        if (film.getReleaseDate().isBefore(FIRST_FILM_RELEASE)) {
+            throw new ValidationException("Дата выпуска Film недействительна");
+        }
+        if (film.getName().isBlank() || film.getName() == null) {
+            throw new ValidationException("Имя Film не может быть пустым");
+        }
+        if (film.getDuration() <= 0 || film.getDuration() > 200) {
+            throw new ValidationException("Продолжительность Film не может быть отрицательным");
+        }
+        if (film.getDescription() == null || film.getDescription().isBlank() || film.getDescription().length() > 200) {
+            throw new ValidationException("Описание Film не может быть больше 200 символов");
+        }
     }
 }

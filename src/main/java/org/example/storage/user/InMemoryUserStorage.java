@@ -4,6 +4,8 @@ package org.example.storage.user;
 import org.example.exceptions.ValidationException;
 import org.example.model.User;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
 import java.util.*;
 
 @Component
@@ -52,6 +54,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void addFriend(int userId, int friendId) {
         var user = users.get(userId);
+        validate(user);
         user.getFriends().add(friendId);
     }
 
@@ -110,5 +113,24 @@ public class InMemoryUserStorage implements UserStorage {
     public static void clearDb() {
         users.clear();
         existingEmails.clear();
+    }
+
+    private void validate(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+        if (user.getLogin() == null || user.getLogin().isBlank()) {
+            throw new ValidationException("логин не может быть пустым");
+        }
+        if (user.getLogin().contains(" ")) {
+            throw new ValidationException("логин не может содержать пробелы");
+        }
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            // user.setEmail(user.getEmail());
+            throw new ValidationException("почта не может быть пустой");
+        }
+        if (user.getBirthday().isAfter(LocalDate.now())) {
+            throw new ValidationException("дата рождения должна быть не будущей");
+        }
     }
 }
