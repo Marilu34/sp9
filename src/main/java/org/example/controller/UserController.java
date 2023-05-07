@@ -1,88 +1,118 @@
 package org.example.controller;
 
+import lombok.extern.slf4j.Slf4j;
+import org.example.exceptions.AlreadyExistException;
+import org.example.exceptions.NotFoundException;
+
+import org.example.exceptions.ValidationException;
 import org.example.model.User;
-import org.example.storage.user.InMemoryUserStorage;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.example.service.UserService;
 
 import javax.validation.Valid;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
 
+@Slf4j
 @RestController
-@RequestMapping("/users")
+@RequestMapping(value = "/users")
 public class UserController {
-    UserService userService;
-   InMemoryUserStorage userStorage;
 
-    public UserController() {
-
-    }
     @Autowired
-    public UserController(UserService userService, InMemoryUserStorage userStorage) {
-        this.userService = userService;
-      this.userStorage = userStorage;
+    private UserService userService;
+
+    @GetMapping
+    public ArrayList<User> getAll() {
+        return userService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable int id) {
+        validateIfUserExist(id, true);
+        return userService.getUser(id);
     }
 
     @PostMapping
-    public User create(@Valid @RequestBody User user) {
-        return userStorage.createUser(user);
-    }
-
-
-    @GetMapping
-    public Collection<User> getAllUsers() {
-        return userStorage.getUsers();
+    public User createUser(@Valid @RequestBody User user) {
+        validateIfUserExist(user.getId(), false);
+        validateExistingEmail(user);
+        validateUserName(user);
+        log.info("User " + user.getEmail() + "was added");
+        return userService.add(user);
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-        return userStorage.updateUsers(user);
-    }
-
-    @GetMapping("/{userId}")
-    public User getUserById(@PathVariable("userId") Integer userId) {
-        return userStorage.getUsersById(userId);
+        validateIfUserExist(user.getId(), true);
+        validateEmail(user);
+        validateUserName(user);
+        log.info("User " + user.getEmail() + "was updated");
+        return userService.update(user);
     }
 
     @DeleteMapping
-    public void deleteAllUsers() {
-        userStorage.deleteUsers();
+    public void deleteUser(@RequestBody User user) {
+        validateIfUserExist(user.getId(), true);
+        log.info("User with id=" + user.getId() + " has been deleted");
+        userService.deleteUser(user);
     }
 
-    @DeleteMapping("{userId}")
-    public void deleteUser(@PathVariable("userId") Integer userId) {
-        userStorage.deleteUsersById(userId);
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable int id, @PathVariable int friendId) {
+        validateIfUserExist(id, true);
+        validateIfUserExist(friendId, true);
+        log.info("User with id=" + id + " add friend with id=" + friendId);
+        userService.addFriend(id, friendId);
     }
 
-    @PutMapping("/{userId}/friends/{friendId}")
-    public void addFriend(@PathVariable("userId") Integer userId,
-                          @PathVariable("friendId") Integer friendId) {
-        userService.addFriend(userId, friendId);
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable int id, @PathVariable int friendId) {
+        validateIfUserExist(id, true);
+        validateIfUserExist(friendId, true);
+        log.info("User with id=" + id + " delete friend with id=" + friendId);
+        userService.deleteFriend(id, friendId);
     }
 
-    @GetMapping("/{userId}/friends")
-    public List<User> getFriends(@PathVariable("userId") Integer userId) {
-        return userService.getFriendList(userId);
+    @GetMapping("/{id}/friends")
+    public ArrayList<User> getFriends(@PathVariable int id) {
+        return userService.getFriends(id);
     }
 
-    @DeleteMapping("/{userId}/friends/{friendId}")
-    public void deleteFriend(@PathVariable("userId") Integer userId,
-                             @PathVariable("friendId") Integer friendId) {
-        userService.deleteFriend(userId, friendId);
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public ArrayList<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+        validateIfUserExist(id, true);
+        validateIfUserExist(otherId, true);
+        return userService.getCommonFriends(id, otherId);
     }
 
-    @GetMapping("/{userId}/friends/common/{friendsId}")
-    public List<User> getCommonFriends(@PathVariable Integer userId,
-                                       @PathVariable Integer friendsId) {
-        Set<Integer> idFriends = getUserById(userId).getFriendsId();
-                Set<Integer> friendFriendsId = getUserById(userId).getFriendsId();
-        idFriends.retainAll(getUserById(userId).getFriendsId());
+    private void validateEmail(User user) {
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+            throw new ValidationException("Can't update user with empty email");
+        }
+    }
 
-        return friendFriendsId.stream().
-                map(friendId -> userStorage.getUsersById(friendId)).collect(Collectors.toList());
+    private void validateUserName(User user) {
+        if (user.getName() == null || user.getName().isEmpty()) {
+            user.setName(user.getLogin());
+        }
+    }
+
+    private void validateExistingEmail(User user) {
+        if (userService.getExistingEmails().contains(user.getEmail())) {
+            throw new AlreadyExistException("User with email " + user.getEmail() + " is already exist");
+        }
+    }
+
+    private void validateIfUserExist(int userId, boolean ifUserShouldExist) {
+        if (ifUserShouldExist) {
+            if (userService.getUser(userId) == null || userId < 0) {
+                throw new NotFoundException("User with id=" + userId + " is not exist");
+            }
+        } else {
+            if (userService.getUser(userId) != null) {
+                throw new AlreadyExistException("User with id=" + userId + " already exist");
+            }
+        }
     }
 }

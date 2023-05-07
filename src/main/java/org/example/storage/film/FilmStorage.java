@@ -2,17 +2,22 @@ package org.example.storage.film;
 
 import org.example.model.Film;
 
-import java.util.Collection;
+import java.util.ArrayList;
+
 
 public interface FilmStorage {
 
-    Film createFilm(Film film);
+    ArrayList<Film> getAll();
 
-    Collection<Film> getAllFilms();
+    Film add(Film film);
 
-    Film updateFilm(Film film);
+    Film update(Film film);
 
-    Film getFilmById(Integer filmId);
+    void addLike(int filmId, int userId);
 
-    void deleteAllFilms();
+    void deleteLike(int filmId, int userId);
+
+    ArrayList<Film> getMostPopularFilms(int count);
+
+    Film getFilmById(int filmId);
 }

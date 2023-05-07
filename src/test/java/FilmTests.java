@@ -18,15 +18,15 @@ public class FilmTests {
     @Test
     public void testFilmRightCreation() {
         Film film = new Film(12, "Film1", "Корректная дата релиза",
-                LocalDate.of(2222, 12, 2), 22, new HashSet<>());
-        assertEquals(film, filmController.createFilm(film));
+                LocalDate.of(2222, 12, 2), 22,new HashSet<>());
+        assertEquals(film, filmController.add(film));
     }
 
     @Test
     public void testFilmInCorrectDateRelease() {
         Film film = new Film(2, "Film2", "Некорректная дата релиза",
                 LocalDate.of(1000, 11, 1), 11, new HashSet<>());
-        assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+        assertThrows(ValidationException.class, () -> filmController.add(film));
     }
 }
 

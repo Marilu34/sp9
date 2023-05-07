@@ -1,99 +1,84 @@
 package org.example.storage.film;
 
 import lombok.Data;
-import org.example.exceptions.IDException;
-import org.example.exceptions.ValidationException;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Getter;
 import org.example.model.Film;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 @Data
 public class InMemoryFilmStorage implements FilmStorage {
-    private final Map<Integer, Film> films = new HashMap<>();
-    private Integer id = 1;
-    private static final LocalDate FIRST_FILM_RELEASE = LocalDate.of(1895, 12, 28);
 
-    private Integer generateID() {
-        return id++;
+    private static final Map<Integer, Film> films = new HashMap<>();
+    private static int nextId = 0;
+
+    @Override
+    public ArrayList<Film> getAll() {
+        return new ArrayList<>(films.values());
     }
 
     @Override
-    public Film createFilm(@RequestBody Film film) {
-
-        if (films.containsKey(film.getId())) {
-            log.debug("Film с id:{}", film.getId());
-            throw new IDException("Id уже занят");
-        }
-        film.setId(generateID());
-        validate(film);
+    public Film add(Film film) {
+        film.setId(setNextId());
         films.put(film.getId(), film);
-        log.info("Создан Film с id:{}", film.getId());
-        return film;
-    }
-
-    private void validate(Film film) {
-        if (film.getReleaseDate().isBefore(FIRST_FILM_RELEASE)) {
-            log.debug("Дата выпуска Film :{}", film.getReleaseDate());
-            throw new ValidationException("Дата выпуска Film недействительна");
-        }
-        if (film.getName().isBlank() || film.getName() == null) {
-            throw new ValidationException("Имя Film не может быть пустым");
-        }
-        if (film.getDuration() <= 0 || film.getDuration() > 200) {
-            throw new ValidationException("Продолжительность Film не может быть отрицательным");
-        }
-        if (film.getDescription() == null || film.getDescription().isBlank() || film.getDescription().length() > 200) {
-            throw new ValidationException("Описание Film не может быть больше 200 символов");
-        }
-    }
-
-    @Override
-    public Collection<Film> getAllFilms() {
-        return films.values();
-    }
-
-    @Override
-    public Film updateFilm(@RequestBody @Valid Film film) {
-        if (((id == 0) || (id < 0)) | (film.getName() == null)) {
-            throw new ValidationException("id должен быть больше 0");
-        }
-        if (!films.containsKey(film.getId())) {
-            log.debug("Film с id:{}", film.getId());
-            throw new IDException("Id не обнаружен");
-        }
-        validate(film);
-        films.put(film.getId(), film);
-        log.info("Film с id:{} обновлен", film.getId());
         return film;
     }
 
     @Override
-    public Film getFilmById(Integer filmId) {
-        if (!films.containsKey(filmId)) {
-            throw new IDException(String.format("Фильм с айди id:%s не обнаружен", filmId));
-        }
+    public Film update(Film film) {
+        films.replace(film.getId(), film);
+        return film;
+    }
+
+    @Override
+    public Film getFilmById(int filmId) {
         return films.get(filmId);
     }
 
     @Override
-    public void deleteAllFilms() {
-        films.clear();
+    public void addLike(int filmId, int userId) {
+        var film = films.get(filmId);
+        film.getUserIdLikes().add(userId);
     }
 
-    public void deleteFilmById(Integer filmId) {
-        if (!films.containsKey(filmId)) {
-            throw new IDException(String.format("Фильм с айди id:%s не обнаружен", filmId));
+    @Override
+    public void deleteLike(int filmId, int userId) {
+        var film = films.get(filmId);
+        film.getUserIdLikes().remove(userId);
+    }
+
+    @Override
+    public ArrayList<Film> getMostPopularFilms(int count) {
+        return films.values().stream()
+                .sorted(this::compare)
+                .limit(count)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private int compare(Film f0, Film f1) {
+        int result = 0;
+        if (f0.getUserIdLikes().size() > f1.getUserIdLikes().size()) {
+            result = -1;
         }
-        films.remove(filmId);
-        log.info("Фильм с id={} удален", films.get(filmId));
+        return result;
+    }
+
+    private int setNextId() {
+        return ++nextId;
+    }
+
+    // Temporary methods. Will be deleted after we will have real db in project
+
+    public static void setStartId0() {
+        nextId = 0;
+    }
+
+    public static void clearDb() {
+        films.clear();
     }
 }

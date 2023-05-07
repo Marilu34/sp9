@@ -3,17 +3,29 @@ package org.example.storage.user;
 
 import org.example.model.User;
 
-import java.util.Collection;
+import java.util.ArrayList;
+
+import java.util.Set;
 
 public interface UserStorage {
 
-    User createUser(User user);
+    ArrayList<User> getAll();
 
-    Collection<User> getUsers();
+    User add(User user);
 
-    User updateUsers(User user);
+    User update(User user);
 
-    User getUsersById(Integer userId);
+    Set<String> getExistingEmails();
 
-    void deleteUsers();
+    User getUser(int userId);
+
+    void addFriend(int userId, int friendId);
+
+    void deleteFriend(int userId, int friendId);
+
+    void deleteUser(User user);
+
+    ArrayList<User> getFriends(int userId);
+
+    ArrayList<User> getCommonFriends(int userId, int userIdToCompare);
 }
