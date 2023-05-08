@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/films")
+@RequestMapping("/films")
 public class FilmController {
 
     @Autowired
@@ -30,38 +30,38 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable int id) {
-        validateIfFilmExist(id, true);
+        checkFilm(id, true);
         return filmService.getFilmById(id);
     }
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
         validateName(film);
-        validateIfFilmExist(film.getId(), false);
-        log.info("Film " + film.getName() + " with id=" + film.getId() + " was added");
+        checkFilm(film.getId(), false);
+        log.info("Фильм " + film.getName() + " с айди =" + film.getId() + " создан");
         return filmService.add(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        validateIfFilmExist(film.getId(), true);
-        log.info("Film " + film.getName() + " with id=" + film.getId() + " was updated");
+        checkFilm(film.getId(), true);
+        log.info("Фильм " + film.getName() + " с айди = " + film.getId() + " обновлен");
         return filmService.update(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable int id, @PathVariable int userId) {
-        validateIfFilmExist(id, true);
-        validateIfUserExist(userId);
-        log.info("User with id=" + id + " set like to user with id=" + userId);
+        checkFilm(id, true);
+        checkUser(userId);
+        log.info("Пользователь  с айди =" + id + " поставил свой лайк Пользователю с айди" + userId);
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable int id, @PathVariable int userId) {
-        validateIfFilmExist(id, true);
-        validateIfUserExist(userId);
-        log.info("User with id=" + id + " delete like to user with id=" + userId);
+        checkFilm(id, true);
+        checkUser(userId);
+        log.info("Пользователь  с айди = " + id + " удалил свой лайк у Пользователя с айди " + userId);
         filmService.deleteLike(id, userId);
     }
 
@@ -70,32 +70,27 @@ public class FilmController {
         return filmService.getMostPopularFilms(count);
     }
 
-    private void validateIfUserExist(int userId) {
+    private void checkUser(int userId) {
         if (userService.getUser(userId) == null) {
-            throw new NotFoundException("User with id=" + userId + " is not exist");
+            throw new NotFoundException("Пользователь  с айди = " + userId + " не найден");
         }
     }
 
-    private void validateIfFilmExist(int filmId, boolean existShouldBeTrue) {
-        if (existShouldBeTrue) {
+    private void checkFilm(int filmId, boolean isValid) {
+        if (isValid) {
             if (filmService.getFilmById(filmId) == null) {
-                throw new NotFoundException("Film with id=" + filmId + " was not found");
+                throw new NotFoundException("Фильм с айди =" + filmId + " не найден");
             }
         } else if (filmId != 0 && filmService.getFilmById(filmId) != null) {
-            throw new AlreadyExistException("Film with id=" + filmId + " already exist");
+            throw new AlreadyExistException("Фильм с айди =" + filmId + " уже создан");
         }
     }
 
-    private void validateName(Film film) throws AlreadyExistException {
-        for (Film existingFilm : filmService.getAll()) {
-            if (film.getName().equalsIgnoreCase(existingFilm.getName())) {
-                throw new AlreadyExistException("Film with name " + film.getName() + " already exist");
+    private void validateName(Film film) {
+        for (Film validateFilm : filmService.getAll()) {
+            if (film.getName().equals(validateFilm.getName())) {
+                throw new AlreadyExistException("Фильм " + film.getName() + " уже есть в базе");
             }
         }
     }
-//    private void validateContrller(){
-//        if (userService.getUser(userId) == null) {
-//            throw new NotFoundException("User with id=" + userId + " is not exist");
-//        }
-//    }
 }

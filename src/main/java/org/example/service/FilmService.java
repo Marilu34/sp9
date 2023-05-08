@@ -18,15 +18,15 @@ public class FilmService {
     }
 
     public ArrayList<Film> getAll(){
-        return filmStorage.getAll();
+        return filmStorage.getAllFilms();
     }
 
     public Film add(Film film){
-        return filmStorage.add(film);
+        return filmStorage.createFilm(film);
     }
 
     public Film update(Film film){
-        return filmStorage.update(film);
+        return filmStorage.updateFilm(film);
     }
 
     public void addLike(int filmId, int userId) {
@@ -37,11 +37,11 @@ public class FilmService {
         filmStorage.deleteLike(filmId, userId);
     }
 
-    public ArrayList<Film> getMostPopularFilms(int count) {
-        return filmStorage.getMostPopularFilms(count);
+    public ArrayList<Film> getMostPopularFilms(Integer id) {
+        return filmStorage.getPopularFilms(id);
     }
 
-    public Film getFilmById(int filmId) {
+    public Film getFilmById(Integer filmId) {
         return filmStorage.getFilmById(filmId);
     }
 }

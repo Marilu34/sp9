@@ -16,7 +16,7 @@ import java.util.ArrayList;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/users")
+@RequestMapping("/users")
 public class UserController {
 
     @Autowired
@@ -36,7 +36,6 @@ public class UserController {
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
         validateIfUserExist(user.getId(), false);
-        validateExistingEmail(user);
         validateUserName(user);
         log.info("User " + user.getEmail() + "was added");
         return userService.add(user);
@@ -95,12 +94,6 @@ public class UserController {
     private void validateUserName(User user) {
         if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
-        }
-    }
-
-    private void validateExistingEmail(User user) {
-        if (userService.getExistingEmails().contains(user.getEmail())) {
-            throw new AlreadyExistException("User with email " + user.getEmail() + " is already exist");
         }
     }
 

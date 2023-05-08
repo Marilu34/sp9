@@ -1,7 +1,6 @@
 package org.example.storage.film;
 
 import lombok.Data;
-import lombok.Getter;
 import org.example.exceptions.ValidationException;
 import org.example.model.Film;
 import org.springframework.stereotype.Component;
@@ -17,23 +16,23 @@ import java.util.stream.Collectors;
 public class InMemoryFilmStorage implements FilmStorage {
     private static final LocalDate FIRST_FILM_RELEASE = LocalDate.of(1895, 12, 28);
     private static final Map<Integer, Film> films = new HashMap<>();
-    private static int nextId = 0;
+    private static int filmID = 1;
 
     @Override
-    public ArrayList<Film> getAll() {
+    public ArrayList<Film> getAllFilms() {
         return new ArrayList<>(films.values());
     }
 
     @Override
-    public Film add(Film film) {
+    public Film createFilm(Film film) {
         validate(film);
-        film.setId(setNextId());
+        film.setId(generateID());
         films.put(film.getId(), film);
         return film;
     }
 
     @Override
-    public Film update(Film film) {
+    public Film updateFilm(Film film) {
         films.replace(film.getId(), film);
         return film;
     }
@@ -45,18 +44,18 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void addLike(int filmId, int userId) {
-        var film = films.get(filmId);
+        Film film = films.get(filmId);
         film.getUserIdLikes().add(userId);
     }
 
     @Override
     public void deleteLike(int filmId, int userId) {
-        var film = films.get(filmId);
+        Film film = films.get(filmId);
         film.getUserIdLikes().remove(userId);
     }
 
     @Override
-    public ArrayList<Film> getMostPopularFilms(int count) {
+    public ArrayList<Film> getPopularFilms(int count) {
         return films.values().stream()
                 .sorted(this::compare)
                 .limit(count)
@@ -71,19 +70,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         return result;
     }
 
-    private int setNextId() {
-        return ++nextId;
+    private int generateID() {
+        return filmID++;
     }
 
-    // Temporary methods. Will be deleted after we will have real db in project
-
-    public static void setStartId0() {
-        nextId = 0;
-    }
-
-    public static void clearDb() {
-        films.clear();
-    }
 
     private void validate(Film film) {
         if (film.getReleaseDate().isBefore(FIRST_FILM_RELEASE)) {

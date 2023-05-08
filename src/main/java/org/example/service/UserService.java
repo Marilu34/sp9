@@ -18,19 +18,15 @@ public class UserService {
     }
 
     public ArrayList<User> getAll() {
-        return userStorage.getAll();
+        return userStorage.getAllUsers();
     }
 
     public User add(User user) {
-        return userStorage.add(user);
+        return userStorage.createUser(user);
     }
 
     public User update(User user) {
-        return userStorage.update(user);
-    }
-
-    public Set<String> getExistingEmails() {
-        return userStorage.getExistingEmails();
+        return userStorage.updateUser(user);
     }
 
     public User getUser(int userId) {

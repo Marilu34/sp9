@@ -13,30 +13,28 @@ public class InMemoryUserStorage implements UserStorage {
 
     private static final Map<Integer, User> users = new HashMap<>();
 
-    private static final Set<String> existingEmails = new HashSet<>();
-    private static int nextId = 0;
+
+    private static int userID = 1;
 
     @Override
-    public ArrayList<User> getAll() {
+    public ArrayList<User> getAllUsers() {
         return new ArrayList<>(users.values());
     }
 
     @Override
-    public User add(User user) {
-        user.setId(setNextId());
+    public User createUser(User user) {
+        user.setId(generateID());
         users.put(user.getId(), user);
-        existingEmails.add(user.getEmail());
         return user;
     }
 
     @Override
-    public User update(User user) {
+    public User updateUser(User user) {
         if (user.getId() <= 0) {
             throw new ValidationException("Can't update user with id=" + user.getId());
         }
         if (users.containsKey(user.getId())) {
             users.replace(user.getId(), user);
-            existingEmails.add(user.getEmail());
         }
         return user;
     }
@@ -53,22 +51,22 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriend(int userId, int friendId) {
-        var user = users.get(userId);
+        User user = users.get(userId);
         validate(user);
         user.getFriendsIds().add(friendId);
     }
 
     @Override
     public void deleteFriend(int userId, int friendId) {
-        var user = users.get(userId);
+        User user = users.get(userId);
         user.getFriendsIds().remove(friendId);
     }
 
     @Override
     public ArrayList<User> getFriends(int userId) {
-        var user = users.get(userId);
-        var listOfFriendsIds = user.getFriendsIds();
-        var result = new ArrayList<User>();
+        User user = users.get(userId);
+        Set <Integer> listOfFriendsIds = user.getFriendsIds();
+        ArrayList<User> result = new ArrayList<>();
 
         for (Integer friendId : listOfFriendsIds) {
             result.add(users.get(friendId));
@@ -78,17 +76,17 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public ArrayList<User> getCommonFriends(int userId, int userIdToCompare) {
-        var user = users.get(userId);
-        var secondUser = users.get(userIdToCompare);
-        var listOfCommonFriendsIds = new HashSet<Integer>();
-        for (Integer friendId : user.getFriendsIds()) {
-            for (Integer friendIdSecondUser : secondUser.getFriendsIds()) {
+        User userFirst = users.get(userId);
+        User userSecond = users.get(userIdToCompare);
+        Set <Integer> listOfCommonFriendsIds = new HashSet<Integer>();
+        for (Integer friendId : userFirst.getFriendsIds()) {
+            for (Integer friendIdSecondUser : userSecond.getFriendsIds()) {
                 if (friendId.equals(friendIdSecondUser)) {
                     listOfCommonFriendsIds.add(friendId);
                 }
             }
         }
-        var result = new ArrayList<User>();
+        ArrayList<User>  result = new ArrayList<>();
 
         for (Integer friendId : listOfCommonFriendsIds) {
             result.add(users.get(friendId));
@@ -96,24 +94,10 @@ public class InMemoryUserStorage implements UserStorage {
         return result;
     }
 
-    private int setNextId() {
-        return ++nextId;
+    private int generateID() {
+        return userID++;
     }
 
-    public Set<String> getExistingEmails() {
-        return existingEmails;
-    }
-
-    // Temporary methods. Will be deleted after we will have real db in project
-
-    public static void setStartId0() {
-        nextId = 0;
-    }
-
-    public static void clearDb() {
-        users.clear();
-        existingEmails.clear();
-    }
 
     private void validate(User user) {
         if (user.getName() == null || user.getName().isBlank()) {

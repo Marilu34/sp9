@@ -7,17 +7,17 @@ import java.util.ArrayList;
 
 public interface FilmStorage {
 
-    ArrayList<Film> getAll();
+    ArrayList<Film> getAllFilms();
 
-    Film add(Film film);
+    Film createFilm(Film film);
 
-    Film update(Film film);
+    Film updateFilm(Film film);
 
     void addLike(int filmId, int userId);
 
     void deleteLike(int filmId, int userId);
 
-    ArrayList<Film> getMostPopularFilms(int count);
+    ArrayList<Film> getPopularFilms(int count);
 
     Film getFilmById(int filmId);
 }

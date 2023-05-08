@@ -1,21 +1,16 @@
 package org.example.storage.user;
 
-
 import org.example.model.User;
 
 import java.util.ArrayList;
 
-import java.util.Set;
-
 public interface UserStorage {
 
-    ArrayList<User> getAll();
+    ArrayList<User> getAllUsers();
 
-    User add(User user);
+    User createUser(User user);
 
-    User update(User user);
-
-    Set<String> getExistingEmails();
+    User updateUser(User user);
 
     User getUser(int userId);
 
